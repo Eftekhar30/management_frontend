@@ -488,3 +488,5 @@ function App() {
 }
 
 export default App;
+
+// Force update for Vercel

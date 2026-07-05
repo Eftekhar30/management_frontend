@@ -1,0 +1,217 @@
+
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- 2. THE MAIN BACKGROUND WITH SUBTLE GEOMETRIC TEXTURE --- */
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100vw;
+  padding: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+
+  /* Premium Light Mode Grid Texture */
+  background-color: #fcfdfe;
+  background-image: 
+    linear-gradient(rgba(241, 243, 249, 0.8) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(241, 243, 249, 0.8) 1.5px, transparent 1.5px);
+  background-size: 30px 30px; /* Size of the grid square cells */
+}
+
+/* --- 3. TOP LEFT CONTROLLER --- */
+.theme-toggle {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  padding: 10px 16px;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #374151;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.theme-toggle:hover {
+  background-color: #f9fafb;
+  transform: translateY(-1px);
+}
+
+/* --- 4. FLOATING AUTH CARD --- */
+.auth-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 380px;        /* Slightly narrower (down from 420px) */
+  padding: 25px 25px;       /* Compact internal padding (down from 45px 35px) */
+  border-radius: 12px;
+  border: 1px solid #eef0f6;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
+  transition: all 0.3s ease;
+}
+
+.auth-card h2 {
+  color: #1e1b4b;
+  text-align: center;
+  font-size: 1.5rem;       /* Smaller title (down from 1.9rem) */
+  margin-bottom: 20px;     /* Tighter spacing (down from 30px) */
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.form-group {
+  margin-bottom: 12px;     /* Tightened spacing between fields (down from 22px) */
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.8rem;       /* Crisper, smaller label text (down from 0.85rem) */
+  color: #4b5563;
+  margin-bottom: 4px;      /* Tighter gap (down from 8px) */
+  font-weight: 600;
+}
+
+/* --- INPUT & SELECT BOXES --- */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 9px 12px;       /* Significantly lower height padding (down from 14px) */
+  border: 1.5px solid #e5e7eb;
+  border-radius: 6px;      /* Slightly tighter corner radius */
+  font-size: 0.9rem;       /* Comfortable reading text size */
+  outline: none;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 11px;           /* Lower button height padding (down from 15px) */
+  background-color: #2e2b70; 
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;      /* Scaled down text */
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;         /* Tighter gap above button */
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background-color: #1d1a4a;
+  transform: translateY(-1px);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 15px;        /* Tighter footer gap (down from 25px) */
+  font-size: 0.85rem;      /* Scaled down text */
+  color: #6b7280;
+}
+
+.auth-footer span {
+  color: #4f46e5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   5. COMPLETE DARK MODE SPECIFICATIONS
+   ========================================================================== */
+.app-container.dark-mode {
+  /* Matrix Dark Grid Texture */
+  background-color: #0b0f19; 
+  background-image: 
+    linear-gradient(rgba(30, 41, 59, 0.5) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(30, 41, 59, 0.5) 1.5px, transparent 1.5px);
+}
+
+.app-container.dark-mode .theme-toggle {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+.app-container.dark-mode .auth-card {
+  background: #111827; /* Rich Charcoal dark frame */
+  border-color: #1f2937;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+}
+
+.app-container.dark-mode .auth-card h2 {
+  color: #f8fafc;
+}
+
+.app-container.dark-mode .form-group label {
+  color: #94a3b8;
+}
+
+.app-container.dark-mode .form-group input,
+.app-container.dark-mode .form-group select {
+  background-color: #1f2937;
+  border-color: #374151;
+  color: #ffffff;
+}
+
+.app-container.dark-mode .form-group input:focus,
+.app-container.dark-mode .form-group select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+.app-container.dark-mode .btn-primary {
+  background-color: #4f46e5; /* Electric Indigo for dark contrast popping */
+}
+
+.app-container.dark-mode .btn-primary:hover {
+  background-color: #4338ca;
+}
+
+.app-container.dark-mode .auth-footer {
+  color: #94a3b8;
+}
+
+.app-container.dark-mode .auth-footer span {
+  color: #818cf8;
+}
+
+/* Loading Screen Animation adaptations */
+.loading-container.dark-mode {
+  background-color: #0b0f19;
+}
+.loading-container.dark-mode .dot {
+  background-color: #6366f1;
+}

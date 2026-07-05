@@ -1,0 +1,405 @@
+import React, { useState, useEffect } from 'react';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
+function App() {
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('token') ? 'portal' : 'login');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') !== 'light');
+  
+  const [notices, setNotices] = useState([]);
+  const [systemUsers, setSystemUsers] = useState([]); 
+  
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [department, setDepartment] = useState(''); 
+
+  const [noticeTitle, setNoticeTitle] = useState('');
+  const [noticeContent, setNoticeContent] = useState('');
+
+  // --- EFFECTS ---
+  useEffect(() => {
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
+  useEffect(() => {
+    if (currentView === 'portal' && !localStorage.getItem('token')) {
+      setCurrentView('login');
+    }
+  }, [currentView]);
+
+  const fetchNotices = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/notices');
+      const data = await response.json();
+      setNotices(Array.isArray(data) ? data : []);
+    } catch (error) { setNotices([]); }
+  };
+
+  const fetchSystemUsers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/users', {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+      });
+      const data = await response.json();
+      if (Array.isArray(data)) setSystemUsers(data);
+    } catch (error) { setSystemUsers([]); }
+  };
+
+  useEffect(() => {
+    if (currentView === 'portal') {
+      fetchNotices();
+      if (localStorage.getItem('userRole') === 'Admin') fetchSystemUsers();
+    }
+  }, [currentView]);
+
+  // --- HANDLERS ---
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setCurrentView('loading');
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }) 
+      });
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem('token', data.token); 
+        localStorage.setItem('userName', data.user?.name || 'Student');
+        localStorage.setItem('userDept', data.user?.department || 'General');
+        localStorage.setItem('userRole', data.user?.role || 'Student'); 
+        
+        setActiveTab('dashboard');
+        setCurrentView('portal');
+      } else {
+        alert(data.message || "Login failed");
+        setCurrentView('login');
+      }
+    } catch (error) { setCurrentView('login'); }
+  };
+
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!email.endsWith('@diu.edu.bd')) return alert("Restricted to DIU university mail only.");
+    setCurrentView('loading');
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, fullName, studentId, department, password })
+      });
+      if (response.ok) {
+        alert("Registration Success! Please login.");
+        setCurrentView('login');
+      } else setCurrentView('register');
+    } catch (error) { setCurrentView('register'); }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userDept');
+    localStorage.removeItem('userRole');
+    setEmail('');
+    setPassword('');
+    setCurrentView('login');
+  };
+
+  const submitNewNotice = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/api/notices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ title: noticeTitle, content: noticeContent })
+      });
+      if (response.ok) {
+        alert("Notice published successfully!");
+        setNoticeTitle('');
+        setNoticeContent('');
+        fetchNotices(); 
+      }
+    } catch (error) { alert("Network error while publishing."); }
+  };
+
+  const assignRole = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:5000/api/admin/assign-role', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify({ email: e.target.elements.targetEmail.value, newRole: e.target.elements.assignedRole.value })
+      });
+      const result = await response.json();
+      alert(result.message);
+      if (response.ok) { e.target.reset(); fetchSystemUsers(); }
+    } catch (err) { alert("Failed to reach security server."); }
+  };
+
+  // --- GLASSMORPHISM THEME ---
+  const theme = {
+    // Dynamic animated gradients so the glass has something to blur
+    bg: darkMode 
+      ? 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' 
+      : 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+    
+    // Core glass properties used everywhere
+    glassBg: darkMode ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.4)',
+    glassBorder: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)',
+    glassShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+    blur: 'backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);',
+
+    text: darkMode ? '#ffffff' : '#1e293b',
+    textMuted: darkMode ? '#cbd5e1' : '#475569',
+    primary: '#6366f1',
+    inputBg: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.5)',
+  };
+
+  if (currentView === 'loading') return <div style={{height: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg}}>⏳</div>;
+
+  // Render Auth
+  if (currentView === 'login' || currentView === 'register') {
+    return (
+      <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg }}>
+        
+        {/* THE NUCLEAR RESET: This destroys the rogue React/Vite CSS */}
+        <style>{`
+          #root { width: 100%; max-width: none !important; margin: 0 !important; padding: 0 !important; text-align: left !important; }
+          body { margin: 0; padding: 0; overflow: hidden; }
+          * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+          input, select, textarea {
+            background-color: ${theme.inputBg} !important;
+            color: ${theme.text} !important;
+            border: 1px solid ${theme.glassBorder} !important;
+            backdrop-filter: blur(4px);
+            outline: none;
+          }
+          input::placeholder { color: ${theme.textMuted} !important; }
+        `}</style>
+
+        {/* GLASS AUTH CARD */}
+        <div style={{ 
+          background: theme.glassBg, 
+          backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+          padding: '50px 40px', borderRadius: '24px', 
+          boxShadow: theme.glassShadow, 
+          width: '100%', maxWidth: '420px', margin: '20px', 
+          border: `1px solid ${theme.glassBorder}` 
+        }}>
+          <h2 style={{ textAlign: 'center', marginBottom: '30px', color: theme.text, fontSize: '2.2rem', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+            {currentView === 'login' ? 'Welcome Back' : 'Create Account'}
+          </h2>
+          
+          <form onSubmit={currentView === 'login' ? handleLogin : handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
+            
+            {currentView === 'register' && (
+              <>
+                <input type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
+                <input type="text" placeholder="Student ID" value={studentId} onChange={(e) => setStudentId(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
+                <select value={department} onChange={(e) => setDepartment(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }}>
+                  <option value="" disabled>Select Dept...</option>
+                  <option value="SWE">SWE</option>
+                  <option value="CSE">CSE</option>
+                </select>
+              </>
+            )}
+            
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
+            <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: theme.primary, color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}>
+              {currentView === 'login' ? 'Sign In' : 'Register'}
+            </button>
+          </form>
+          
+          <p style={{ textAlign: 'center', marginTop: '25px', fontSize: '0.95rem', cursor: 'pointer', color: theme.text, fontWeight: 'bold' }} onClick={() => setCurrentView(currentView === 'login' ? 'register' : 'login')}>
+            {currentView === 'login' ? 'Create an account' : 'Already have an account? Login'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render Full-Screen Portal
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', background: theme.bg, display: 'flex', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", overflow: 'hidden' }}>
+      
+      <style>{`
+        #root { width: 100%; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+        body { margin: 0; padding: 0; overflow: hidden; }
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 4px; }
+        
+        input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.glassBorder} !important; outline: none; backdrop-filter: blur(4px); }
+        input::placeholder, textarea::placeholder { color: ${theme.textMuted} !important; }
+        
+        /* Custom Pill Toggle Switch */
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'}; transition: .4s; border-radius: 30px; border: 1px solid ${theme.glassBorder}; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: ${darkMode ? '#fff' : '#fff'}; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .toggle-switch input:checked + .toggle-slider { background-color: ${theme.primary}; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(24px); }
+        
+        /* Expanding Dashboard Grid */
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px; width: 100%; }
+      `}</style>
+
+      {/* GLASS SIDEBAR (LEFT SIDE) */}
+      <div style={{ width: '280px', height: '100vh', flexShrink: 0, background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRight: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, color: theme.text, display: 'flex', flexDirection: 'column', padding: '30px 20px', zIndex: 10 }}>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', padding: '0 10px' }}>
+          <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', fontSize: '20px', backdropFilter: 'blur(4px)' }}>🎓</div>
+          <h2 style={{ margin: 0, fontSize: '1.5rem', color: theme.text, textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>DIU Portal</h2>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div onClick={() => setActiveTab('dashboard')} style={{ padding: '14px 20px', borderRadius: '12px', cursor: 'pointer', background: activeTab === 'dashboard' ? 'rgba(255,255,255,0.2)' : 'transparent', color: theme.text, fontWeight: activeTab === 'dashboard' ? 'bold' : 'normal', transition: '0.2s', border: activeTab === 'dashboard' ? `1px solid ${theme.glassBorder}` : '1px solid transparent' }}>
+            📊 Dashboard
+          </div>
+          
+          {localStorage.getItem('userRole') === 'Admin' && (
+            <div onClick={() => setActiveTab('admin')} style={{ padding: '14px 20px', borderRadius: '12px', cursor: 'pointer', background: activeTab === 'admin' ? 'rgba(255,255,255,0.2)' : 'transparent', color: theme.text, fontWeight: activeTab === 'admin' ? 'bold' : 'normal', transition: '0.2s', border: activeTab === 'admin' ? `1px solid ${theme.glassBorder}` : '1px solid transparent' }}>
+              🛡️ Admin Panel
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '0 10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '0.95rem', color: theme.text, fontWeight: '500' }}>Dark Mode</span>
+            <label className="toggle-switch">
+              <input type="checkbox" checked={darkMode} onChange={() => setDarkMode(!darkMode)} />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+          <div onClick={handleLogout} style={{ padding: '14px', borderRadius: '12px', cursor: 'pointer', background: 'rgba(239, 68, 68, 0.2)', border: `1px solid rgba(239, 68, 68, 0.3)`, color: darkMode ? '#fca5a5' : '#b91c1c', textAlign: 'center', fontWeight: 'bold', backdropFilter: 'blur(4px)' }}>
+            Log Out
+          </div>
+        </div>
+      </div>
+
+      {/* FULL-WIDTH MAIN CONTENT */}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', color: theme.text }}>
+        
+        {/* GLASS HEADER */}
+        <div style={{ height: '80px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 40px', background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: `1px solid ${theme.glassBorder}`, zIndex: 9 }}>
+          <div style={{ textAlign: 'right', marginRight: '15px' }}>
+            <strong style={{ display: 'block', fontSize: '1rem', color: theme.text }}>{localStorage.getItem('userName')}</strong>
+            <span style={{ fontSize: '0.85rem', color: theme.textMuted }}>{localStorage.getItem('userDept')} | {localStorage.getItem('userRole')}</span>
+          </div>
+          <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', border: `1px solid ${theme.glassBorder}`, color: theme.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold', backdropFilter: 'blur(4px)' }}>
+            {localStorage.getItem('userName').charAt(0)}
+          </div>
+        </div>
+
+        {/* SCROLLABLE PAGE CONTENT (RIGHT SIDE) */}
+        <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '40px' }}>
+          
+          {/* HERO BANNER (Solid to pop against the glass) */}
+          <div style={{ background: `linear-gradient(135deg, ${theme.primary}, #9333ea)`, borderRadius: '24px', padding: '40px', color: 'white', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 15px 35px rgba(99, 102, 241, 0.3)' }}>
+            <div>
+              <h1 style={{ margin: '0 0 10px 0', fontSize: '2.4rem', textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>Welcome back, {localStorage.getItem('userName').split(' ')[0]}!</h1>
+              <p style={{ margin: 0, opacity: 0.9, fontSize: '1.1rem' }}>Always stay updated in your student portal.</p>
+            </div>
+            <div style={{ fontSize: '4.5rem', filter: 'drop-shadow(0 10px 10px rgba(0,0,0,0.2))' }}>🚀</div>
+          </div>
+
+          <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+            {activeTab === 'dashboard' && (
+              <div>
+                <h3 style={{ marginBottom: '20px', color: theme.text, fontSize: '1.6rem', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Daily Notices</h3>
+                <div className="dashboard-grid">
+                  {notices.map((n) => (
+                    // GLASS CARDS
+                    <div key={n._id || Math.random()} style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '25px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                      <strong style={{ display: 'block', fontSize: '1.3rem', color: theme.text, marginBottom: '10px' }}>{n.title}</strong>
+                      <p style={{ margin: '0 0 20px 0', fontSize: '1.05rem', lineHeight: '1.6', color: theme.textMuted }}>{n.content}</p>
+                      <div style={{ fontSize: '0.85rem', color: theme.textMuted, fontWeight: 'bold', background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '8px', display: 'inline-block' }}>
+                        {n.authorName ? `From: ${n.authorName}` : 'System Admin'}
+                      </div>
+                    </div>
+                  ))}
+                  {notices.length === 0 && <p style={{ color: theme.textMuted, fontSize: '1.2rem' }}>No new notices broadcasted yet.</p>}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'admin' && localStorage.getItem('userRole') === 'Admin' && (
+              <div>
+                <h3 style={{ marginBottom: '20px', color: theme.text, fontSize: '1.6rem', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Administrative Controls</h3>
+                
+                <div className="dashboard-grid" style={{ marginBottom: '40px' }}>
+                  {/* GLASS CARD: ROLE */}
+                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '30px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                    <h4 style={{ margin: '0 0 20px 0', color: theme.text, fontSize: '1.3rem' }}>👥 Assign System Role</h4>
+                    <form onSubmit={assignRole} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      <input type="email" name="targetEmail" placeholder="student-id@diu.edu.bd" required style={{ width: '100%', padding: '14px', borderRadius: '12px' }} />
+                      <select name="assignedRole" required style={{ width: '100%', padding: '14px', borderRadius: '12px' }}>
+                        <option value="" disabled>Select Permission Level...</option>
+                        <option value="Student">Student Access</option>
+                        <option value="CR">CR (Class Representative)</option>
+                        <option value="Admin">System Administrator</option>
+                      </select>
+                      <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: '#10b981', color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)' }}>Apply Changes</button>
+                    </form>
+                  </div>
+
+                  {/* GLASS CARD: NOTICE */}
+                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '30px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                    <h4 style={{ margin: '0 0 20px 0', color: theme.text, fontSize: '1.3rem' }}>📢 Broadcast Notice</h4>
+                    <form onSubmit={submitNewNotice} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                      <input type="text" placeholder="Notice Title" value={noticeTitle} onChange={(e) => setNoticeTitle(e.target.value)} required style={{ width: '100%', padding: '14px', borderRadius: '12px' }} />
+                      <textarea placeholder="Write the announcement..." value={noticeContent} onChange={(e) => setNoticeContent(e.target.value)} required style={{ width: '100%', padding: '14px', borderRadius: '12px', resize: 'vertical', minHeight: '100px' }} />
+                      <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: theme.primary, color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}>Publish Notice</button>
+                    </form>
+                  </div>
+                </div>
+
+                {/* GLASS CARD: DIRECTORY TABLE */}
+                <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '30px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, overflowX: 'auto', width: '100%' }}>
+                  <h4 style={{ margin: '0 0 20px 0', color: theme.text, fontSize: '1.3rem' }}>📇 System User Directory</h4>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '1.05rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: `2px solid ${theme.glassBorder}` }}>
+                        <th style={{ padding: '16px 12px', color: theme.text }}>Full Name</th>
+                        <th style={{ padding: '16px 12px', color: theme.text }}>University Email</th>
+                        <th style={{ padding: '16px 12px', color: theme.text }}>Department</th>
+                        <th style={{ padding: '16px 12px', color: theme.text }}>System Role</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {systemUsers.map(user => (
+                        <tr key={user._id || Math.random()} style={{ borderBottom: `1px solid ${theme.glassBorder}` }}>
+                          <td style={{ padding: '16px 12px', color: theme.text, fontWeight: '500' }}>{user.fullName}</td>
+                          <td style={{ padding: '16px 12px', color: theme.textMuted }}>{user.email}</td>
+                          <td style={{ padding: '16px 12px', color: theme.textMuted }}>{user.department}</td>
+                          <td style={{ padding: '16px 12px' }}>
+                            <span style={{ 
+                              padding: '6px 12px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: 'bold',
+                              background: user.role === 'Admin' ? 'rgba(99, 102, 241, 0.2)' : user.role === 'CR' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                              color: user.role === 'Admin' ? (darkMode ? '#a5b4fc' : theme.primary) : user.role === 'CR' ? (darkMode ? '#6ee7b7' : '#10b981') : theme.text,
+                              border: `1px solid ${theme.glassBorder}`
+                            }}>
+                              {user.role}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;

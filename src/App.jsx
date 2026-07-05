@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-const API_BASE = import.meta.env.VITE_API_URL || 'https://management-frontend-five.vercel.app/'
+const API_BASE = import.meta.env.VITE_API_URL || 'https://management-t0be.onrender.com'
 
 function App() {
   const [currentView, setCurrentView] = useState(() => localStorage.getItem('token') ? 'portal' : 'login');
@@ -31,7 +31,7 @@ function App() {
 
   const fetchNotices = async () => {
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/notices');
+      const response = await fetch('https://management-t0be.onrender.com/api/notices');
       const data = await response.json();
       setNotices(Array.isArray(data) ? data : []);
     } catch (error) { setNotices([]); }
@@ -39,7 +39,7 @@ function App() {
 
   const fetchSystemUsers = async () => {
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/admin/users', {
+      const response = await fetch('https://management-t0be.onrender.com/api/admin/users', {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await response.json();
@@ -59,7 +59,7 @@ function App() {
     e.preventDefault();
     setCurrentView('loading');
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/auth/login', {
+      const response = await fetch('https://management-t0be.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }) 
@@ -86,7 +86,7 @@ function App() {
     if (!email.endsWith('@diu.edu.bd')) return alert("Restricted to DIU university mail only.");
     setCurrentView('loading');
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/auth/register', {
+      const response = await fetch('https://management-t0be.onrender.com/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, fullName, studentId, department, password })
@@ -111,7 +111,7 @@ function App() {
   const submitNewNotice = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/notices', {
+      const response = await fetch('https://management-t0be.onrender.com/api/notices', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify({ title: noticeTitle, content: noticeContent })
@@ -128,7 +128,7 @@ function App() {
   const assignRole = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://management-frontend-five.vercel.app/api/admin/assign-role', {
+      const response = await fetch('https://management-t0be.onrender.com/api/admin/assign-role', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
         body: JSON.stringify({ email: e.target.elements.targetEmail.value, newRole: e.target.elements.assignedRole.value })

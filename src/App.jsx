@@ -168,16 +168,27 @@ function App() {
     try {
       const response = await fetch(`${API_BASE}/api/notices`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        },
         body: JSON.stringify({ title: noticeTitle, content: noticeContent })
       });
+      
+      const data = await response.json(); 
+
       if (response.ok) {
         alert("Notice published successfully!");
         setNoticeTitle('');
         setNoticeContent('');
         fetchNotices(); 
+      } else {
+        alert(`Backend Error: ${data.message}`);
       }
-    } catch (error) { console.error(error); alert("Network error."); }
+    } catch (error) { 
+      console.error(error); 
+      alert("Network error. Check your console for details."); 
+    }
   };
 
   const assignRole = async (e) => {

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+
+// Temporarily disabling the API_BASE unused warning if you aren't using it yet, 
+// though it IS used in the fetch calls below!
 const API_BASE = import.meta.env.VITE_API_URL || 'https://management-t0be.onrender.com';
 
 function App() {
   const [currentView, setCurrentView] = useState(() => localStorage.getItem('token') ? 'portal' : 'login');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') !== 'light');
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // New state for the dropdown
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   
   const [notices, setNotices] = useState([]);
   const [systemUsers, setSystemUsers] = useState([]); 
@@ -24,18 +27,52 @@ function App() {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
 
+  // FIX: Using an async wrapper inside the effect prevents the "cascading render" warning
   useEffect(() => {
-    if (currentView === 'portal' && !localStorage.getItem('token')) {
-      setCurrentView('login');
-    }
+    const initializePortal = async () => {
+      if (currentView === 'portal') {
+        if (!localStorage.getItem('token')) {
+          setCurrentView('login');
+          return;
+        }
+        
+        try {
+          const noticeRes = await fetch(`${API_BASE}/api/notices`);
+          const noticeData = await noticeRes.json();
+          setNotices(Array.isArray(noticeData) ? noticeData : []);
+        } catch (error) { 
+          console.error("Notice fetch error:", error); // FIX: Actually utilizing the error variable
+          setNotices([]); 
+        }
+
+        if (localStorage.getItem('userRole') === 'Admin') {
+          try {
+            const userRes = await fetch(`${API_BASE}/api/admin/users`, {
+              headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+            });
+            const userData = await userRes.json();
+            if (Array.isArray(userData)) setSystemUsers(userData);
+          } catch (error) {
+            console.error("User fetch error:", error);
+            setSystemUsers([]);
+          }
+        }
+      }
+    };
+
+    initializePortal();
   }, [currentView]);
 
+  // Helper functions for manual updates (like after submitting a notice)
   const fetchNotices = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/notices`);
       const data = await response.json();
       setNotices(Array.isArray(data) ? data : []);
-    } catch (error) { setNotices([]); }
+    } catch (error) { 
+      console.error(error);
+      setNotices([]); 
+    }
   };
 
   const fetchSystemUsers = async () => {
@@ -45,15 +82,11 @@ function App() {
       });
       const data = await response.json();
       if (Array.isArray(data)) setSystemUsers(data);
-    } catch (error) { setSystemUsers([]); }
-  };
-
-  useEffect(() => {
-    if (currentView === 'portal') {
-      fetchNotices();
-      if (localStorage.getItem('userRole') === 'Admin') fetchSystemUsers();
+    } catch (error) { 
+      console.error(error);
+      setSystemUsers([]); 
     }
-  }, [currentView]);
+  };
 
   // --- HANDLERS ---
   const handleLogin = async (e) => {
@@ -79,7 +112,10 @@ function App() {
         alert(data.message || "Login failed");
         setCurrentView('login');
       }
-    } catch (error) { setCurrentView('login'); }
+    } catch (error) { 
+      console.error(error);
+      setCurrentView('login'); 
+    }
   };
 
   const handleRegister = async (e) => {
@@ -96,7 +132,10 @@ function App() {
         alert("Registration Success! Please login.");
         setCurrentView('login');
       } else setCurrentView('register');
-    } catch (error) { setCurrentView('register'); }
+    } catch (error) { 
+      console.error(error);
+      setCurrentView('register'); 
+    }
   };
 
   const handleLogout = () => {
@@ -124,7 +163,10 @@ function App() {
         setNoticeContent('');
         fetchNotices(); 
       }
-    } catch (error) { alert("Network error while publishing."); }
+    } catch (error) { 
+      console.error(error);
+      alert("Network error while publishing."); 
+    }
   };
 
   const assignRole = async (e) => {
@@ -138,7 +180,10 @@ function App() {
       const result = await response.json();
       alert(result.message);
       if (response.ok) { e.target.reset(); fetchSystemUsers(); }
-    } catch (err) { alert("Failed to reach security server."); }
+    } catch (error) { 
+      console.error(error);
+      alert("Failed to reach security server."); 
+    }
   };
 
   // --- GLASSMORPHISM THEME ---
@@ -353,8 +398,9 @@ function App() {
               <div>
                 <h3 style={{ marginBottom: '20px', color: theme.text, fontSize: '1.6rem', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>Daily Notices</h3>
                 <div className="dashboard-grid">
-                  {notices.map((n) => (
-                    <div key={n._id || Math.random()} style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '25px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                  {/* FIX: Using the mapping index instead of Math.random() to satisfy React strict purity */}
+                  {notices.map((n, index) => (
+                    <div key={n._id || `notice-${index}`} style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '25px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
                       <strong style={{ display: 'block', fontSize: '1.3rem', color: theme.text, marginBottom: '10px' }}>{n.title}</strong>
                       <p style={{ margin: '0 0 20px 0', fontSize: '1.05rem', lineHeight: '1.6', color: theme.textMuted }}>{n.content}</p>
                       <div style={{ fontSize: '0.85rem', color: theme.textMuted, fontWeight: 'bold', background: 'rgba(255,255,255,0.1)', padding: '5px 10px', borderRadius: '8px', display: 'inline-block' }}>
@@ -411,8 +457,9 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {systemUsers.map(user => (
-                        <tr key={user._id || Math.random()} style={{ borderBottom: `1px solid ${theme.glassBorder}` }}>
+                      {/* FIX: Using mapping index instead of Math.random() */}
+                      {systemUsers.map((user, index) => (
+                        <tr key={user._id || `user-${index}`} style={{ borderBottom: `1px solid ${theme.glassBorder}` }}>
                           <td style={{ padding: '16px 12px', color: theme.text, fontWeight: '500' }}>{user.fullName}</td>
                           <td style={{ padding: '16px 12px', color: theme.textMuted }}>{user.email}</td>
                           <td style={{ padding: '16px 12px', color: theme.textMuted }}>{user.department}</td>

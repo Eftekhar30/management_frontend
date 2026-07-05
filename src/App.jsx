@@ -7,7 +7,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') !== 'light');
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // NEW: Mobile sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
   
   const [notices, setNotices] = useState([]);
   const [systemUsers, setSystemUsers] = useState([]); 
@@ -122,6 +122,29 @@ function App() {
     } catch (error) { console.error(error); setCurrentView('register'); }
   };
 
+  // INSTANT DEMO LOGIN ENGINE
+  const handleDemoLogin = (role) => {
+    setCurrentView('loading');
+    
+    setTimeout(() => {
+      localStorage.setItem('token', `demo-token-${role.toLowerCase()}`); 
+      
+      if (role === 'Admin') {
+        localStorage.setItem('userName', 'Demo Admin');
+        localStorage.setItem('userDept', 'SWE');
+        localStorage.setItem('userRole', 'Admin'); 
+        setActiveTab('admin');
+      } else {
+        localStorage.setItem('userName', 'Demo Student');
+        localStorage.setItem('userDept', 'CSE');
+        localStorage.setItem('userRole', 'Student'); 
+        setActiveTab('dashboard');
+      }
+      
+      setCurrentView('portal');
+    }, 800);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
@@ -135,6 +158,13 @@ function App() {
 
   const submitNewNotice = async (e) => {
     e.preventDefault();
+    if (localStorage.getItem('token')?.startsWith('demo-token')) {
+      alert("Notice Published! (Demo Mode: Not saved to database)");
+      setNoticeTitle('');
+      setNoticeContent('');
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/notices`, {
         method: 'POST',
@@ -152,6 +182,12 @@ function App() {
 
   const assignRole = async (e) => {
     e.preventDefault();
+    if (localStorage.getItem('token')?.startsWith('demo-token')) {
+      alert("Role Updated! (Demo Mode: Changes not saved to database)");
+      e.target.reset();
+      return;
+    }
+
     try {
       const response = await fetch(`${API_BASE}/api/admin/assign-role`, {
         method: 'PUT',
@@ -174,10 +210,10 @@ function App() {
     textMuted: darkMode ? '#94a3b8' : '#475569',
     primary: '#6366f1',
     inputBg: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.7)',
-    menuBg: darkMode ? '#1e293bf2' : '#ffffffef', // Solid, slightly opaque for the menu
+    menuBg: darkMode ? '#1e293bf2' : '#ffffffef',
   };
 
-  // --- FIXED LOADING SCREEN ---
+  // --- LOADING SCREEN ---
   if (currentView === 'loading') {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: theme.bg, zIndex: 9999 }}>
@@ -200,13 +236,24 @@ function App() {
           #root { width: 100%; max-width: none !important; margin: 0 !important; padding: 0 !important; text-align: left !important; }
           body { margin: 0; padding: 0; overflow: hidden; }
           * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-          input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.glassBorder} !important; backdrop-filter: blur(4px); outline: none; }
+          input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.glassBorder} !important; backdrop-filter: blur(4px); outline: none; transition: 0.2s; }
+          input:focus, select:focus { border-color: ${theme.primary} !important; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2); }
           input::placeholder { color: ${theme.textMuted} !important; }
+          
+          .demo-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid ${theme.glassBorder}; background: rgba(255,255,255,0.1); color: ${theme.text}; font-weight: 600; cursor: pointer; transition: 0.2s; backdrop-filter: blur(4px); }
+          .demo-btn:hover { background: rgba(255,255,255,0.2); transform: translateY(-2px); }
         `}</style>
-        <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '50px 40px', borderRadius: '24px', boxShadow: theme.glassShadow, width: '90%', maxWidth: '420px', border: `1px solid ${theme.glassBorder}` }}>
-          <h2 style={{ textAlign: 'center', marginBottom: '30px', color: theme.text, fontSize: '2.2rem' }}>{currentView === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
+        
+        <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', padding: '40px', borderRadius: '24px', boxShadow: theme.glassShadow, width: '90%', maxWidth: '420px', border: `1px solid ${theme.glassBorder}`, maxHeight: '95vh', overflowY: 'auto' }}>
+          
+          <div style={{ textAlign: 'center', marginBottom: '25px' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '10px' }}>🎓</div>
+            <h2 style={{ margin: 0, color: theme.text, fontSize: '2rem' }}>{currentView === 'login' ? 'Welcome Back' : 'Create Account'}</h2>
+          </div>
+          
           <form onSubmit={currentView === 'login' ? handleLogin : handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
+            
             {currentView === 'register' && (
               <>
                 <input type="text" placeholder="Full Name" value={fullName} onChange={(e) => setFullName(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
@@ -218,11 +265,25 @@ function App() {
                 </select>
               </>
             )}
+            
             <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ padding: '14px', borderRadius: '12px' }} />
-            <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: theme.primary, color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px' }}>
+            
+            <button type="submit" style={{ padding: '14px', borderRadius: '12px', background: theme.primary, color: 'white', border: 'none', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '5px', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)' }}>
               {currentView === 'login' ? 'Sign In' : 'Register'}
             </button>
           </form>
+
+          {/* DEMO BUTTONS */}
+          {currentView === 'login' && (
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ textAlign: 'center', fontSize: '0.85rem', color: theme.textMuted, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Or try a demo</div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="button" className="demo-btn" onClick={() => handleDemoLogin('Admin')}>🛡️ Admin</button>
+                <button type="button" className="demo-btn" onClick={() => handleDemoLogin('Student')}>👤 Student</button>
+              </div>
+            </div>
+          )}
+          
           <p style={{ textAlign: 'center', marginTop: '25px', fontSize: '0.95rem', cursor: 'pointer', color: theme.text, fontWeight: 'bold' }} onClick={() => setCurrentView(currentView === 'login' ? 'register' : 'login')}>
             {currentView === 'login' ? 'Create an account' : 'Already have an account? Login'}
           </p>
@@ -235,7 +296,6 @@ function App() {
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', background: theme.bg, display: 'flex', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", overflow: 'hidden' }}>
       
-      {/* MOBILE RESPONSIVE CSS INJECTOR */}
       <style>{`
         #root { width: 100%; max-width: none !important; margin: 0 !important; padding: 0 !important; }
         body { margin: 0; padding: 0; overflow: hidden; }
@@ -255,14 +315,11 @@ function App() {
         .toggle-switch input:checked + .toggle-slider { background-color: ${theme.primary}; }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
         
-        /* Dashboard Layout */
         .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; width: 100%; }
-
-        /* Professional Menu Items */
         .pro-menu-item { padding: 12px 16px; border-radius: 8px; cursor: pointer; color: ${theme.text}; display: flex; align-items: center; gap: 12px; font-weight: 500; transition: background 0.2s ease; }
         .pro-menu-item:hover { background: ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}; }
         
-        /* --- MOBILE MEDIA QUERIES --- */
+        /* MOBILE QUERIES */
         .sidebar-container { width: 280px; transition: transform 0.3s ease; z-index: 100; }
         .mobile-overlay { display: none; }
         .hamburger { display: none; cursor: pointer; font-size: 1.5rem; color: ${theme.text}; padding: 10px; margin-right: auto; }
@@ -273,22 +330,17 @@ function App() {
           .sidebar-container.open { transform: translateX(0); }
           .mobile-overlay.open { display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 90; backdrop-filter: blur(2px); }
           .hamburger { display: block; }
-          
           .header-nav { padding: 0 15px !important; }
           .main-scroll-area { padding: 20px 15px !important; }
-          
           .hero-banner { flex-direction: column-reverse; text-align: center; gap: 20px; padding: 30px 20px !important; }
           .hero-title { font-size: 1.8rem !important; }
           .hero-avatar { width: 70px !important; height: 70px !important; font-size: 2.5rem !important; margin: 0 auto; }
         }
       `}</style>
 
-      {/* MOBILE OVERLAY (Darkens screen when sidebar is open on phone) */}
       <div className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
 
-      {/* GLASS SIDEBAR */}
       <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`} style={{ flexShrink: 0, background: theme.glassBg, backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRight: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, display: 'flex', flexDirection: 'column', padding: '30px 20px' }}>
-        
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', padding: '0 10px' }}>
           <div style={{ background: 'rgba(255,255,255,0.2)', padding: '10px', borderRadius: '12px', fontSize: '20px' }}>🎓</div>
           <h2 style={{ margin: 0, fontSize: '1.4rem', color: theme.text }}>Student Manager</h2>
@@ -307,13 +359,9 @@ function App() {
         </div>
       </div>
 
-      {/* MAIN CONTENT AREA */}
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        
-        {/* HEADER */}
         <div className="header-nav" style={{ height: '80px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 40px', background: theme.glassBg, backdropFilter: 'blur(16px)', borderBottom: `1px solid ${theme.glassBorder}`, zIndex: 50 }}>
           
-          {/* HAMBURGER (Visible only on mobile) */}
           <div className="hamburger" onClick={() => setIsSidebarOpen(true)}>☰</div>
 
           <div style={{ textAlign: 'right', marginRight: '15px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
@@ -321,7 +369,6 @@ function App() {
             <span style={{ fontSize: '0.85rem', color: theme.textMuted }}>{localStorage.getItem('userDept')} | {localStorage.getItem('userRole')}</span>
           </div>
           
-          {/* INTERACTIVE PROFILE AVATAR & DROPDOWN */}
           <div style={{ position: 'relative' }}>
             <div 
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
@@ -330,10 +377,8 @@ function App() {
               {localStorage.getItem('userName')?.charAt(0) || 'U'}
             </div>
 
-            {/* FIXED PROFESSIONAL DROPDOWN */}
             {isProfileMenuOpen && (
               <div style={{ position: 'absolute', top: '55px', right: '0', width: '240px', background: theme.menuBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: `1px solid ${theme.glassBorder}`, borderRadius: '16px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 9999 }}>
-                
                 <div className="pro-menu-item" onClick={() => setIsProfileMenuOpen(false)}>
                   <span style={{ fontSize: '1.2rem' }}>👤</span> Profile
                 </div>
@@ -362,10 +407,8 @@ function App() {
           </div>
         </div>
 
-        {/* SCROLLABLE PAGE CONTENT */}
         <div className="main-scroll-area" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '40px' }} onClick={() => { if(isProfileMenuOpen) setIsProfileMenuOpen(false); }}>
           
-          {/* HERO BANNER */}
           <div className="hero-banner" style={{ background: `linear-gradient(135deg, ${theme.primary}, #9333ea)`, borderRadius: '24px', padding: '40px', color: 'white', marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 15px 35px rgba(99, 102, 241, 0.3)' }}>
             <div>
               <h1 className="hero-title" style={{ margin: '0 0 10px 0', textShadow: '0 2px 10px rgba(0,0,0,0.2)' }}>Welcome back, {localStorage.getItem('userName')?.split(' ')[0]}!</h1>
@@ -425,7 +468,6 @@ function App() {
                   </div>
                 </div>
 
-                {/* RESPONSIVE TABLE WRAPPER */}
                 <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', padding: '30px', borderRadius: '20px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, width: '100%', overflowX: 'auto' }}>
                   <h4 style={{ margin: '0 0 20px 0', color: theme.text, fontSize: '1.3rem' }}>📇 System User Directory</h4>
                   <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '1.05rem', minWidth: '600px' }}>

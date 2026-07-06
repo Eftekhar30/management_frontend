@@ -199,18 +199,17 @@ function App() {
 
   // --- THEME ENGINE ---
   const theme = {
-    // Soft, anti-fatigue gray for light mode, deep slate for dark mode
-    bg: darkMode ? 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' : '#f3f4f6',
-    // Highly opaque glass panels to contrast cleanly against the gray background
-    glassBg: darkMode ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.85)',
-    containerBorder: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 1)',
+    // Exact requested color for light mode background
+    bg: darkMode ? 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' : '#D2D5DC',
+    glassBg: darkMode ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.6)',
+    containerBorder: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.7)',
     glassShadow: darkMode ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)' : '0 4px 20px 0 rgba(0, 0, 0, 0.05)',
     text: darkMode ? '#f8fafc' : '#1e293b',
-    textMuted: darkMode ? '#94a3b8' : '#64748b',
+    textMuted: darkMode ? '#94a3b8' : '#475569',
     primary: '#4f46e5',
-    inputBg: darkMode ? 'rgba(0,0,0,0.2)' : '#ffffff',
+    inputBg: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.85)',
     menuBg: darkMode ? 'rgba(30, 41, 59, 0.85)' : 'rgba(255, 255, 255, 0.95)',
-    listHover: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)',
+    listHover: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.4)',
   };
 
   const noticeColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];

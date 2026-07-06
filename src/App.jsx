@@ -21,7 +21,6 @@ function App() {
   const [noticeTitle, setNoticeTitle] = useState('');
   const [noticeContent, setNoticeContent] = useState('');
 
-  // --- EFFECTS ---
   useEffect(() => {
     localStorage.setItem('theme', darkMode ? 'dark' : 'light');
   }, [darkMode]);
@@ -78,7 +77,6 @@ function App() {
     } catch (error) { console.error(error); setSystemUsers([]); }
   };
 
-  // --- HANDLERS ---
   const handleLogin = async (e) => {
     e.preventDefault();
     setCurrentView('loading');
@@ -198,30 +196,28 @@ function App() {
     } catch (error) { console.error(error); alert("Failed to reach server."); }
   };
 
-  // --- THEME ENGINE ---
   const theme = {
-    bg: darkMode ? 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' : 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)',
-    glassBg: darkMode ? 'rgba(15, 23, 42, 0.6)' : 'rgba(255, 255, 255, 0.8)',
-    glassBorder: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-    glassShadow: '0 4px 20px 0 rgba(0, 0, 0, 0.05)',
+    bg: darkMode ? 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)' : 'linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%)',
+    glassBg: darkMode ? 'rgba(15, 23, 42, 0.45)' : 'rgba(255, 255, 255, 0.35)',
+    containerBorder: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+    glassShadow: darkMode ? '0 8px 32px 0 rgba(0, 0, 0, 0.3)' : '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
     text: darkMode ? '#f8fafc' : '#1e293b',
     textMuted: darkMode ? '#94a3b8' : '#64748b',
-    primary: '#6366f1',
-    inputBg: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,1)',
-    menuBg: darkMode ? '#1e293bf2' : '#ffffffef',
-    listHover: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+    primary: '#4f46e5',
+    inputBg: darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)',
+    menuBg: darkMode ? 'rgba(30, 41, 59, 0.85)' : 'rgba(255, 255, 255, 0.75)',
+    listHover: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.4)',
   };
 
   const noticeColors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
 
-  // --- LOADING SCREEN ---
   if (currentView === 'loading') {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: theme.bg, zIndex: 9999 }}>
         <style>{`
           body { margin: 0; padding: 0; overflow: hidden; }
           @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-          .glass-spinner { border: 3px solid ${theme.glassBorder}; border-top: 3px solid ${theme.primary}; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+          .glass-spinner { border: 3px solid ${theme.containerBorder}; border-top: 3px solid ${theme.primary}; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         `}</style>
         <div className="glass-spinner"></div>
         <h3 style={{ color: theme.text, fontFamily: "'Segoe UI', sans-serif", fontWeight: '500', fontSize: '1.1rem' }}>Authenticating...</h3>
@@ -229,7 +225,6 @@ function App() {
     );
   }
 
-  // --- AUTH SCREEN ---
   if (currentView === 'login' || currentView === 'register') {
     return (
       <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', display: 'flex', alignItems: 'center', justifyContent: 'center', background: theme.bg }}>
@@ -237,14 +232,14 @@ function App() {
           #root { width: 100%; max-width: none !important; margin: 0 !important; padding: 0 !important; text-align: left !important; }
           body { margin: 0; padding: 0; overflow: hidden; }
           * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-          input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.glassBorder} !important; backdrop-filter: blur(4px); outline: none; transition: 0.2s; font-size: 0.95rem !important;}
-          input:focus, select:focus { border-color: ${theme.primary} !important; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1); }
+          input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.containerBorder} !important; backdrop-filter: blur(12px); outline: none; transition: 0.2s; font-size: 0.95rem !important;}
+          input:focus, select:focus { border-color: ${theme.primary} !important; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15); }
           input::placeholder { color: ${theme.textMuted} !important; }
-          .demo-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid ${theme.glassBorder}; background: ${darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}; color: ${theme.text}; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; }
-          .demo-btn:hover { background: ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}; transform: translateY(-1px); }
+          .demo-btn { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid ${theme.containerBorder}; background: ${theme.inputBg}; color: ${theme.text}; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; backdrop-filter: blur(12px); }
+          .demo-btn:hover { background: ${theme.listHover}; transform: translateY(-1px); }
         `}</style>
         
-        <div style={{ background: theme.glassBg, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', padding: '35px', borderRadius: '16px', boxShadow: theme.glassShadow, width: '90%', maxWidth: '400px', border: `1px solid ${theme.glassBorder}`, maxHeight: '95vh', overflowY: 'auto' }}>
+        <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', padding: '35px', borderRadius: '16px', boxShadow: theme.glassShadow, width: '90%', maxWidth: '400px', border: `1px solid ${theme.containerBorder}`, maxHeight: '95vh', overflowY: 'auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '25px' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '8px' }}>🎓</div>
             <h2 style={{ margin: 0, color: theme.text, fontSize: '1.6rem', fontWeight: '600' }}>{currentView === 'login' ? 'Student Manager' : 'Create Account'}</h2>
@@ -287,7 +282,6 @@ function App() {
     );
   }
 
-  // --- PORTAL SCREEN ---
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, height: '100vh', width: '100vw', background: theme.bg, display: 'flex', fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", overflow: 'hidden' }}>
       
@@ -299,8 +293,8 @@ function App() {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}; border-radius: 4px; }
         
-        input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.glassBorder} !important; outline: none; transition: border-color 0.2s; font-size: 0.95rem; }
-        input:focus, select:focus, textarea:focus { border-color: ${theme.primary} !important; }
+        input, select, textarea { background-color: ${theme.inputBg} !important; color: ${theme.text} !important; border: 1px solid ${theme.containerBorder} !important; backdrop-filter: blur(8px); outline: none; transition: border-color 0.2s; font-size: 0.95rem; }
+        input:focus, select:focus, textarea:focus { border-color: ${theme.primary} !important; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15); }
         input::placeholder, textarea::placeholder { color: ${theme.textMuted} !important; }
         
         .toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; margin: 0; }
@@ -322,7 +316,7 @@ function App() {
         @media (max-width: 768px) {
           .sidebar-container { position: absolute; height: 100%; transform: translateX(-100%); }
           .sidebar-container.open { transform: translateX(0); }
-          .mobile-overlay.open { display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 90; backdrop-filter: blur(2px); }
+          .mobile-overlay.open { display: block; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 90; backdrop-filter: blur(4px); }
           .hamburger { display: block; }
           .header-nav { padding: 0 15px !important; }
           .main-scroll-area { padding: 15px !important; }
@@ -332,19 +326,19 @@ function App() {
 
       <div className={`mobile-overlay ${isSidebarOpen ? 'open' : ''}`} onClick={() => setIsSidebarOpen(false)}></div>
 
-      <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`} style={{ flexShrink: 0, background: theme.glassBg, backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRight: `1px solid ${theme.glassBorder}`, display: 'flex', flexDirection: 'column', padding: '25px 15px' }}>
+      <div className={`sidebar-container ${isSidebarOpen ? 'open' : ''}`} style={{ flexShrink: 0, background: theme.glassBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', borderRight: `1px solid ${theme.containerBorder}`, display: 'flex', flexDirection: 'column', padding: '25px 15px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '35px', padding: '0 10px' }}>
-          <div style={{ background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', padding: '8px', borderRadius: '8px', fontSize: '18px' }}>🎓</div>
+          <div style={{ background: theme.inputBg, padding: '8px', borderRadius: '8px', fontSize: '18px', border: `1px solid ${theme.containerBorder}` }}>🎓</div>
           <h2 style={{ margin: 0, fontSize: '1.2rem', color: theme.text, fontWeight: '600' }}>Student Manager</h2>
         </div>
 
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <div onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} style={{ padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'dashboard' ? (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent', color: theme.text, fontWeight: activeTab === 'dashboard' ? '600' : '500', fontSize: '0.95rem', transition: '0.2s' }}>
+          <div onClick={() => { setActiveTab('dashboard'); setIsSidebarOpen(false); }} style={{ padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'dashboard' ? theme.listHover : 'transparent', color: theme.text, fontWeight: activeTab === 'dashboard' ? '600' : '500', fontSize: '0.95rem', transition: '0.2s' }}>
             📊 Dashboard
           </div>
           
           {localStorage.getItem('userRole') === 'Admin' && (
-            <div onClick={() => { setActiveTab('admin'); setIsSidebarOpen(false); }} style={{ padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'admin' ? (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)') : 'transparent', color: theme.text, fontWeight: activeTab === 'admin' ? '600' : '500', fontSize: '0.95rem', transition: '0.2s' }}>
+            <div onClick={() => { setActiveTab('admin'); setIsSidebarOpen(false); }} style={{ padding: '12px 16px', borderRadius: '8px', cursor: 'pointer', background: activeTab === 'admin' ? theme.listHover : 'transparent', color: theme.text, fontWeight: activeTab === 'admin' ? '600' : '500', fontSize: '0.95rem', transition: '0.2s' }}>
               🛡️ Admin Panel
             </div>
           )}
@@ -352,7 +346,7 @@ function App() {
       </div>
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div className="header-nav" style={{ height: '70px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 30px', background: theme.glassBg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${theme.glassBorder}`, zIndex: 50 }}>
+        <div className="header-nav" style={{ height: '70px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', padding: '0 30px', background: theme.glassBg, backdropFilter: 'blur(24px)', borderBottom: `1px solid ${theme.containerBorder}`, zIndex: 50 }}>
           
           <div className="hamburger" onClick={() => setIsSidebarOpen(true)}>☰</div>
 
@@ -364,13 +358,13 @@ function App() {
           <div style={{ position: 'relative' }}>
             <div 
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              style={{ width: '40px', height: '40px', borderRadius: '50%', background: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', border: `1px solid ${isProfileMenuOpen ? theme.primary : theme.glassBorder}`, color: theme.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', userSelect: 'none' }}
+              style={{ width: '40px', height: '40px', borderRadius: '50%', background: theme.inputBg, border: `1px solid ${isProfileMenuOpen ? theme.primary : theme.containerBorder}`, color: theme.text, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', transition: '0.2s', userSelect: 'none' }}
             >
               {localStorage.getItem('userName')?.charAt(0) || 'U'}
             </div>
 
             {isProfileMenuOpen && (
-              <div style={{ position: 'absolute', top: '48px', right: '0', width: '200px', background: theme.menuBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: `1px solid ${theme.glassBorder}`, borderRadius: '12px', boxShadow: '0 8px 30px rgba(0,0,0,0.15)', padding: '6px', display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 9999 }}>
+              <div style={{ position: 'absolute', top: '48px', right: '0', width: '200px', background: theme.menuBg, backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: `1px solid ${theme.containerBorder}`, borderRadius: '12px', boxShadow: theme.glassShadow, padding: '6px', display: 'flex', flexDirection: 'column', gap: '2px', zIndex: 9999 }}>
                 <div className="pro-menu-item" style={{ justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <span>🌗</span> Dark Mode
@@ -381,7 +375,7 @@ function App() {
                   </label>
                 </div>
                 
-                <div style={{ height: '1px', background: theme.glassBorder, margin: '6px' }}></div>
+                <div style={{ height: '1px', background: theme.containerBorder, margin: '6px' }}></div>
 
                 <div className="pro-menu-item" onClick={handleLogout} style={{ color: darkMode ? '#fca5a5' : '#ef4444' }}>
                   <span>🚪</span> Log Out
@@ -393,13 +387,13 @@ function App() {
 
         <div className="main-scroll-area" style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '30px' }} onClick={() => { if(isProfileMenuOpen) setIsProfileMenuOpen(false); }}>
           
-          <div className="hero-banner" style={{ background: darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(99, 102, 241, 0.05)', border: `1px solid ${darkMode ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.15)'}`, borderRadius: '12px', padding: '24px 30px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div className="hero-banner" style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow, borderRadius: '12px', padding: '24px 30px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h1 style={{ margin: '0 0 4px 0', fontSize: '1.4rem', color: theme.text, fontWeight: '600' }}>Welcome back, {localStorage.getItem('userName')?.split(' ')[0]}!</h1>
               <p style={{ margin: 0, color: theme.textMuted, fontSize: '0.9rem' }}>Here is the latest from your student manager.</p>
             </div>
             
-            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(99, 102, 241, 0.3)' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: theme.primary, color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold', boxShadow: `0 4px 15px ${theme.primary}40` }}>
               {localStorage.getItem('userName')?.charAt(0) || 'U'}
             </div>
           </div>
@@ -407,8 +401,8 @@ function App() {
           <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
             
             {activeTab === 'dashboard' && (
-              <div style={{ background: theme.glassBg, backdropFilter: 'blur(20px)', borderRadius: '12px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${theme.glassBorder}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${theme.containerBorder}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ fontSize: '1.1rem' }}>📌</span>
                   <h3 style={{ margin: 0, color: theme.text, fontSize: '1rem', fontWeight: '600' }}>Notice Board</h3>
                 </div>
@@ -417,13 +411,13 @@ function App() {
                   {notices.map((n, index) => {
                     const accentColor = noticeColors[index % noticeColors.length];
                     return (
-                      <div key={n._id || `notice-${index}`} className="notice-row" style={{ display: 'flex', padding: '16px 20px', borderBottom: `1px solid ${theme.glassBorder}`, position: 'relative', transition: 'background 0.2s', cursor: 'default' }}>
+                      <div key={n._id || `notice-${index}`} className="notice-row" style={{ display: 'flex', padding: '16px 20px', borderBottom: `1px solid ${theme.containerBorder}`, position: 'relative', transition: 'background 0.2s', cursor: 'default' }}>
                         <div style={{ width: '3px', background: accentColor, position: 'absolute', left: 0, top: '12px', bottom: '12px', borderRadius: '0 4px 4px 0' }}></div>
                         
                         <div style={{ flex: 1, paddingLeft: '14px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px', flexWrap: 'wrap', gap: '10px' }}>
                             <strong style={{ fontSize: '0.95rem', color: theme.text, fontWeight: '600' }}>{n.title}</strong>
-                            <div style={{ fontSize: '0.75rem', color: theme.textMuted, display: 'flex', alignItems: 'center', gap: '6px', background: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)', padding: '4px 8px', borderRadius: '4px' }}>
+                            <div style={{ fontSize: '0.75rem', color: theme.textMuted, display: 'flex', alignItems: 'center', gap: '6px', background: theme.inputBg, padding: '4px 8px', borderRadius: '4px', border: `1px solid ${theme.containerBorder}` }}>
                               <span>👤</span> {n.authorName || 'System Admin'}
                             </div>
                           </div>
@@ -441,7 +435,7 @@ function App() {
               <div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '20px' }}>
                   
-                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '12px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', padding: '24px', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow }}>
                     <h4 style={{ margin: '0 0 16px 0', color: theme.text, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}><span>👥</span> Assign Role</h4>
                     <form onSubmit={assignRole} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <input type="email" name="targetEmail" placeholder="student-id@diu.edu.bd" required style={{ width: '100%', padding: '10px 12px', borderRadius: '8px' }} />
@@ -455,7 +449,7 @@ function App() {
                     </form>
                   </div>
 
-                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(20px)', padding: '24px', borderRadius: '12px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow }}>
+                  <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', padding: '24px', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow }}>
                     <h4 style={{ margin: '0 0 16px 0', color: theme.text, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}><span>📢</span> Broadcast Notice</h4>
                     <form onSubmit={submitNewNotice} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <input type="text" placeholder="Notice Title" value={noticeTitle} onChange={(e) => setNoticeTitle(e.target.value)} required style={{ width: '100%', padding: '10px 12px', borderRadius: '8px' }} />
@@ -465,14 +459,14 @@ function App() {
                   </div>
                 </div>
 
-                <div style={{ background: theme.glassBg, backdropFilter: 'blur(20px)', borderRadius: '12px', border: `1px solid ${theme.glassBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
-                  <div style={{ padding: '16px 20px', borderBottom: `1px solid ${theme.glassBorder}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
+                  <div style={{ padding: '16px 20px', borderBottom: `1px solid ${theme.containerBorder}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
                     <h4 style={{ margin: 0, color: theme.text, fontSize: '1rem', fontWeight: '600' }}>📇 System User Directory</h4>
                   </div>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem', minWidth: '600px' }}>
                       <thead>
-                        <tr style={{ borderBottom: `2px solid ${theme.glassBorder}` }}>
+                        <tr style={{ borderBottom: `2px solid ${theme.containerBorder}` }}>
                           <th style={{ padding: '12px 20px', color: theme.textMuted, fontWeight: '600' }}>Name</th>
                           <th style={{ padding: '12px 20px', color: theme.textMuted, fontWeight: '600' }}>Email</th>
                           <th style={{ padding: '12px 20px', color: theme.textMuted, fontWeight: '600' }}>Dept</th>
@@ -481,12 +475,12 @@ function App() {
                       </thead>
                       <tbody>
                         {systemUsers.map((user, index) => (
-                          <tr key={user._id || `user-${index}`} className="notice-row" style={{ borderBottom: `1px solid ${theme.glassBorder}`, transition: 'background 0.2s' }}>
+                          <tr key={user._id || `user-${index}`} className="notice-row" style={{ borderBottom: `1px solid ${theme.containerBorder}`, transition: 'background 0.2s' }}>
                             <td style={{ padding: '12px 20px', color: theme.text, fontWeight: '500' }}>{user.fullName}</td>
                             <td style={{ padding: '12px 20px', color: theme.textMuted }}>{user.email}</td>
                             <td style={{ padding: '12px 20px', color: theme.textMuted }}>{user.department}</td>
                             <td style={{ padding: '12px 20px' }}>
-                              <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', background: user.role === 'Admin' ? 'rgba(99, 102, 241, 0.1)' : user.role === 'CR' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(156, 163, 175, 0.1)', color: user.role === 'Admin' ? (darkMode ? '#a5b4fc' : theme.primary) : user.role === 'CR' ? (darkMode ? '#6ee7b7' : '#10b981') : theme.textMuted, border: `1px solid ${theme.glassBorder}` }}>
+                              <span style={{ padding: '4px 10px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '600', background: user.role === 'Admin' ? 'rgba(99, 102, 241, 0.1)' : user.role === 'CR' ? 'rgba(16, 185, 129, 0.1)' : theme.inputBg, color: user.role === 'Admin' ? (darkMode ? '#a5b4fc' : theme.primary) : user.role === 'CR' ? (darkMode ? '#6ee7b7' : '#10b981') : theme.textMuted, border: `1px solid ${theme.containerBorder}` }}>
                                 {user.role}
                               </span>
                             </td>

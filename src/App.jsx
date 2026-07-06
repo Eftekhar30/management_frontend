@@ -409,27 +409,32 @@ function App() {
             
             {/* Dashboard Tab */}
             {activeTab === 'dashboard' && (
-              <div style={{ background: theme.glassBg, backdropFilter: 'blur(16px)', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
-                <div style={{ padding: '16px 20px', borderBottom: `1px solid ${darkMode ? theme.containerBorder : '#e2e8f0'}`, background: darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '1.1rem' }}>📌</span>
-                  <h3 style={{ margin: 0, color: theme.text, fontSize: '1rem', fontWeight: '600' }}>Notice Board</h3>
+              <div style={{ background: theme.glassBg, backdropFilter: 'blur(24px)', borderRadius: '12px', border: `1px solid ${theme.containerBorder}`, boxShadow: theme.glassShadow, overflow: 'hidden' }}>
+                <div style={{ padding: '16px 24px', borderBottom: `1px solid ${darkMode ? theme.containerBorder : 'rgba(0,0,0,0.08)'}`, background: darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>📌</span>
+                  <h3 style={{ margin: 0, color: theme.text, fontSize: '1.05rem', fontWeight: '600' }}>Notice Board</h3>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {notices.map((n, index) => {
                     const accentColor = noticeColors[index % noticeColors.length];
                     return (
-                      <div key={n._id || `notice-${index}`} className="notice-row" style={{ display: 'flex', padding: '16px 20px', borderBottom: `1px solid ${darkMode ? theme.containerBorder : '#e2e8f0'}`, position: 'relative', transition: 'background 0.2s', cursor: 'default' }}>
-                        <div style={{ width: '3px', background: accentColor, position: 'absolute', left: 0, top: '12px', bottom: '12px', borderRadius: '0 4px 4px 0' }}></div>
+                      <div key={n._id || `notice-${index}`} className="notice-row" style={{ display: 'flex', padding: '24px', borderBottom: index === notices.length - 1 ? 'none' : `1px solid ${darkMode ? theme.containerBorder : 'rgba(0,0,0,0.06)'}`, position: 'relative', transition: 'background 0.2s', cursor: 'default' }}>
+                        <div style={{ width: '4px', background: accentColor, position: 'absolute', left: 0, top: '16px', bottom: '16px', borderRadius: '0 4px 4px 0' }}></div>
                         
-                        <div style={{ flex: 1, paddingLeft: '14px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px', flexWrap: 'wrap', gap: '10px' }}>
-                            <strong style={{ fontSize: '0.95rem', color: theme.text, fontWeight: '600' }}>{n.title}</strong>
-                            <div style={{ fontSize: '0.75rem', color: theme.textMuted, display: 'flex', alignItems: 'center', gap: '6px', background: theme.inputBg, padding: '4px 8px', borderRadius: '4px', border: `1px solid ${darkMode ? theme.containerBorder : '#e2e8f0'}` }}>
+                        <div style={{ flex: 1, paddingLeft: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px', flexWrap: 'wrap', gap: '10px' }}>
+                            <strong style={{ fontSize: '1rem', color: theme.text, fontWeight: '600' }}>{n.title}</strong>
+                            <div style={{ fontSize: '0.8rem', color: theme.textMuted, display: 'flex', alignItems: 'center', gap: '6px', background: theme.inputBg, padding: '4px 10px', borderRadius: '6px', border: `1px solid ${darkMode ? theme.containerBorder : 'rgba(0,0,0,0.05)'}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                               <span>👤</span> {n.authorName || 'System Admin'}
                             </div>
                           </div>
-                          <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.5', color: theme.textMuted }}>{n.content}</p>
+                          
+                          {/* FIX: Explicit left alignment and word-break for long test strings */}
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: '1.6', color: theme.textMuted, textAlign: 'left', wordBreak: 'break-word' }}>
+                            {n.content}
+                          </p>
+                          
                         </div>
                       </div>
                     );
